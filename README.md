@@ -28,7 +28,7 @@ Output:
 
 ## Project Structure
 
-
+'''
 ├── main.py                     # End-to-end pipeline
 ├── scripts/
 │   ├── load_private_data.py    # Reads provided private files
@@ -44,7 +44,7 @@ Output:
 │   ├── company_teaser.pptx     # Final teaser deck
 │   └── company_citations.docx  # Citation & sources document
 └── README.md
-
+'''
 
 ---
 
