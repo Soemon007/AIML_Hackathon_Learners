@@ -1,10 +1,16 @@
+#Import core python modules
 from docx import Document
 from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+#Low-Level imports to make URLs work
 from docx.oxml.shared import OxmlElement
 from docx.oxml.ns import qn
+
+#For timestamping the file_name
 from datetime import datetime
 
+#Function that adds clickable links to the document
 def add_hyperlink(paragraph, url, text):
 
     part = paragraph.part
@@ -14,10 +20,8 @@ def add_hyperlink(paragraph, url, text):
     hyperlink.set(qn('r:id'), r_id)
     
     new_run = OxmlElement('w:r')
-    
     rPr = OxmlElement('w:rPr')
     
-
     color = OxmlElement('w:color')
     color.set(qn('w:val'), '0563C1') 
     rPr.append(color)
@@ -45,21 +49,24 @@ def add_hyperlink(paragraph, url, text):
     
     return hyperlink
 
-
+#Function that creates the actual document
 def create_citations(private_data, public_data):
+    
     doc = Document()
     
     style = doc.styles['Normal']
     font = style.font
     font.name = 'Arial'
     font.size = Pt(12)
-    
+
+    #Stylized Heading 1
     heading1_style = doc.styles['Heading 1']
     heading1_style.font.name = 'Arial'
     heading1_style.font.size = Pt(16)
     heading1_style.font.bold = True
     heading1_style.font.color.rgb = RGBColor(0, 0, 0)
-    
+
+    #Stylized Heading 2
     heading2_style = doc.styles['Heading 2']
     heading2_style.font.name = 'Arial'
     heading2_style.font.size = Pt(14)
@@ -80,7 +87,8 @@ def create_citations(private_data, public_data):
     heading = doc.add_heading("Public Sources", level=2)
     heading.paragraph_format.space_before = Pt(12)
     heading.paragraph_format.space_after = Pt(6)
-    
+
+    # Extract URLs from public_data dict
     source_urls = public_data.get("source_urls", [])
     
     if source_urls:
@@ -97,11 +105,12 @@ def create_citations(private_data, public_data):
             
             add_hyperlink(p, url, url)
     else:
+        # Fallback if no sources exist
         doc.add_paragraph("No public web sources used")
-    
+        
+     # Timestamped output filename
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_filename = f"output/citations/company_citations_{timestamp}.docx"
     
     doc.save(output_filename)
-    print(f"💾 Saved citations to: {output_filename}")
 
