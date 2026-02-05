@@ -4,9 +4,9 @@
 
 ## Overview
 
-This project automatically generates anonymized investment teaser decks** (PowerPoint) and a citation document from a mix of private company data and public information.
+This project automatically generates anonymized investment teaser decks(PowerPoint) and a citation document from a mix of private company data and public information.
 
-The system is designed to mirror how an investment banking / M&A analyst would create a teaser, but in a **fully automated, reproducible pipeline**.
+The system is designed to mirror how an investment banking / M&A analyst would create a teaser, but in a fully automated, reproducible pipeline.
 
 Output:
 
@@ -56,24 +56,20 @@ Output:
 2. Collect Public Data
    Scrapes publicly available information using requests / BeautifulSoup (or APIs where available).
 
-3. Merge & Normalize
-   Combines all data into a clean, structured internal format.
-
-4. Generate Slide Content
+3. Generate Slide Content
    Converts raw data into investment-style language (titles, bullets, metrics).
 
-5. Anonymization Check
+4. Anonymization Check
    Automatically scans for forbidden terms (company names, locations, identifiers).
-   Pipeline fails fast if leakage is detected.
 
-6. PowerPoint Generation
-   Creates a 3-slide teaser with:
+5. PowerPoint Generation
+   Creates a 5-slide teaser with:
 
-   * Business overview
-   * Financial snapshot (charts)
-   * Sector visuals
+   * Business/Brand overview
+   * Financial snapshot (with charts)
+   * Investment Highlights
 
-7. Citation Generation
+6. Citation Generation
    Produces a separate document mapping claims → sources.
 
 ---
@@ -124,7 +120,7 @@ Instead, the system uses neutral investment language such as:
 * "International customers"
 * "Multiple strategic locations"
 
-If any forbidden term is detected, the pipeline **halts immediately**.
+If any forbidden term is detected, the script replaces the word with a suitable hard-coded replacement.
 
 ---
 
@@ -139,18 +135,15 @@ If any forbidden term is detected, the pipeline **halts immediately**.
 
 ## Limitations
 
-* Visual design is intentionally conservative
-* Image selection avoids logos but may still require manual review
+* Visual design is intentionally conservative and limited
 * Financial assumptions are only as accurate as provided data
 
 ---
 
 ## Future Improvements
 
-* LLM-assisted language refinement
-* Multi-company batch processing
+* LLM-assisted language refinement to existing text
 * Template-based slide theming
-* Automated KPI selection by sector
 
 ---
 
@@ -158,7 +151,6 @@ If any forbidden term is detected, the pipeline **halts immediately**.
 
 This project was built under tight time constraints to demonstrate:
 
-* Structured reasoning
 * Automation-first thinking
 * Real-world financial deliverable generation
 
@@ -168,4 +160,4 @@ It prioritizes **correctness, safety, and clarity** over flashy visuals.
 
 ## License
 
-This project is intended for hackathon evaluation and educational use only.
+This project is intended for hackathon evaluation only, and may be used for further purposes under the MIT license
