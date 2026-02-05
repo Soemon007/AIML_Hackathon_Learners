@@ -28,30 +28,30 @@ Output:
 
 ## Project Structure
 
-'''
+```
 ├── main.py                     # End-to-end pipeline
 ├── scripts/
 │   ├── load_private_data.py    # Reads provided private files
 │   ├── scrape.py               # Collects public information
-│   ├── merge_data.py           # Merges public + private data
 │   ├── generate_text.py        # Generates slide-level content
 │   ├── anonymize.py            # Leakage detection & replacement
 │   ├── generate_ppt.py         # PowerPoint generation logic
 │   └── citations.py            # Citation document generation
 ├── assets/
-│   └── images/                 # Downloaded, anonymized images
+│   └── images                 # Downloaded, anonymized images
+│   └── icons
 ├── output/
 │   ├── company_teaser.pptx     # Final teaser deck
 │   └── company_citations.docx  # Citation & sources document
 └── README.md
-'''
+```
 
 ---
 
 ## How It Works (Pipeline)
 
 1. Load Private Data
-   Reads financials and company-provided information (PDF, Excel, Markdown).
+   Reads financials and company-provided information (Markdown).
 
 2. Collect Public Data
    Scrapes publicly available information using requests / BeautifulSoup (or APIs where available).
@@ -126,10 +126,9 @@ If any forbidden term is detected, the script replaces the word with a suitable 
 
 ## Design Decisions
 
-* **Native PPT elements only** (text boxes, charts)
-* **No screenshots or static images of text**
-* **Minimalist layout** to mirror real M&A teasers
-* **Explainability** via citations rather than black-box claims
+* Native PPT elements only (text boxes, charts)
+* No screenshots or static images of text
+* Minimalist layout to mirror real M&A teasers
 
 ---
 
