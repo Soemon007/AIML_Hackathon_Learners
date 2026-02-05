@@ -38,22 +38,9 @@ icons = ["growth.png", "market.png", "revenue.png", "team.png"]
 
 
 def generate_slide_text(private_data, public_data):
-    """
-    Generates structured JSON content for a blind teaser deck using Gemini API.
-    
-    Args:
-        private_data (str): Proprietary company data from uploaded .md file
-        public_data (str): Scraped public data from company website
-        
-    Returns:
-        dict: Structured JSON containing slide content (sector, highlights, charts, etc.)
-        
-    Raises:
-        RuntimeError: If all models fail to generate valid response
-    """
     
     genai.configure(api_key=MY_API_KEY)
-
+    
     # Defines the expected JSON structure for the AI response
     response_schema = {
         "type": "OBJECT",
@@ -103,6 +90,12 @@ def generate_slide_text(private_data, public_data):
             # Icon images for visual representation (format: "icon1.png||icon2.png")
             "icons": {"type": "STRING"},
             
+            # Source URLs used for research
+            "source_urls": {
+                "type": "ARRAY",
+                "items": {"type": "STRING"}
+            },
+            
             # Pie chart data structure
             "pie_chart_data": {
                 "type": "OBJECT",
@@ -134,12 +127,8 @@ def generate_slide_text(private_data, public_data):
         "response_mime_type": "application/json",
         "response_schema": response_schema
     }
-
-    # ========================================
-    # PROMPT CONSTRUCTION
-    # ========================================
-    # Detailed instructions for the AI to generate sector-specific content
     
+    # Detailed instructions for the AI to generate sector-specific content
     prompt = f"""
     You are an M&A investment analyst.
     
@@ -186,7 +175,8 @@ def generate_slide_text(private_data, public_data):
       - Use professional, concise investor language.
       - Anonymize the company name (use "The Company" or "Project X").
       - Output valid JSON only.
-      - In case of a lack of data on a topic you may search the web for it.
+      - You may use the internet to clarify, verify, or supplement information when needed.
+      - If you use any external URLs for research, add them to the "source_urls" array in your response.
 
     CONTENT GUIDELINES (Flexible Ranges):
 
@@ -212,69 +202,58 @@ def generate_slide_text(private_data, public_data):
 
     7. "icons":
        - String format: "icon1.png||icon2.png"
-       - Choose ONLY from: {icons}. Max 4.
-       - Select icons for each of the textbox you've made for 1,2,3, 5(bar chart) and 5(pie chart).
-       - Icon file names contain keywords of what icons represent, Select accordingly to the content ouputted for each textbox
+       - Choose ONLY from: {icons}. Max 5.
+       - Select icons that match the content theme of each section.
+       - Icon filenames contain keywords describing what they represent - choose accordingly.
 
     8. "pie_chart_data" & "bar_chart_data":
        - Pick the most important metric based on the Sector Guidelines.
-       - Format: "Title||Cat1,Cat2,Cat3||Val1,Val2,Val3"
        - Use 3 to 5 categories per chart.
        - If there are more than 2 decimal places, truncate to two.
        - If values are > 100, truncate decimals completely.
 
-    --- CONTENT --
+    9. "source_urls":
+       - Array of any external URLs you used for research or verification.
+       - Leave empty if you only used the provided PRIVATE and PUBLIC data.
+
+    --- CONTENT ---
     PRIVATE DATA (SOURCE OF TRUTH):
     {private_data}
 
     PUBLIC DATA (SCRAPED):
     {public_data}
 
-    You may use the internet to clarify, verify, or supplement information when needed. 
-    Do not introduce facts that conflict with PRIVATE or PUBLIC DATA, and prioritize those sources over internet information.
+    PRIORITY: Always prioritize PRIVATE DATA and PUBLIC DATA over internet sources.
     """
     
-    # Try each model in sequence until one succeeds
+    # MODEL FALLBACK LOOP 
     for model_name in MODELS_TO_TRY:
         try:
-            # Initialize the Gemini model
             model = genai.GenerativeModel(model_name)
             
-            # Generate content with structured output
             response = model.generate_content(
                 prompt, 
                 generation_config=generation_config
             )
             
-            # RESPONSE CLEANING
+            # Clean response
             text_response = response.text.strip()
-            # Remove opening ```json or ``` markers
             text_response = re.sub(r"^```json|^```", "", text_response).strip()
-            # Remove closing ``` markers
             text_response = re.sub(r"```$", "", text_response).strip()
-            # Parse the cleaned JSON string
-            result = json.loads(text_response)
-
             
-            # Move 'brand_overview' to 'business_overview' if needed
+            result = json.loads(text_response)
+            
+            # Backward compatibility fix
             if result.get("brand_overview") and not result.get("business_overview"):
                 result["business_overview"] = result.pop("brand_overview")
-            # Return successful result
+            
             return result
             
         except exceptions.ResourceExhausted:
-            # Model hit rate limit, try next model
             print(f"Limit hit for {model_name}. Switching...")
             continue
-            
         except Exception as e:
-            # Other error occurred, try next model
             print(f"Error with {model_name}: {e}")
             continue
 
-    # ========================================
-    # FAILURE HANDLER
-    # ========================================
-    # All models failed to generate valid response
-    
     raise RuntimeError("All models failed.")
