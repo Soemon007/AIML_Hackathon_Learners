@@ -1,7 +1,7 @@
 import re
 import warnings
 
-# Try importing Presidio (Graceful fallback if not installed)
+# Try importing Presidio (fallback if not installed)
 try:
     from presidio_analyzer import AnalyzerEngine
     from presidio_anonymizer import AnonymizerEngine
@@ -9,7 +9,7 @@ try:
     PRESIDIO_AVAILABLE = True
 except ImportError:
     PRESIDIO_AVAILABLE = False
-    warnings.warn("⚠️ Presidio libraries not found. Falling back to Regex. Install 'presidio-analyzer' & 'presidio-anonymizer'.")
+    warnings.warn("Presidio libraries not found. Falling back to Regex. Install 'presidio-analyzer' & 'presidio-anonymizer'.")
 
 # Global engines (Singleton pattern)
 _analyzer = None
@@ -39,9 +39,6 @@ def check_anonymization(data):
     return data
 
 def sanitize_string(text):
-    """
-    Smart Anonymization using NLP (Presidio) with Fallback to Regex.
-    """
     # 1. First run Regex Fallback to catch obvious patterns (Works even if Presidio is off)
     #    We run this FIRST to catch specific phrases like "Headquartered in Pune" 
     #    before the NLP breaks them apart.
@@ -51,9 +48,9 @@ def sanitize_string(text):
         try:
             analyzer, anonymizer = get_engines()
             
-            # --- IMPROVEMENT: Target Specific Entities Only ---
+            # --- Target Specific Entities Only ---
             # ORG: Companies | GPE: Countries/Cities | PERSON: Names
-            # We IGNORE 'DATE' and 'MONEY' because teasers need those numbers!
+            # IGNORE 'DATE' and 'MONEY' because teasers need those numbers
             results = analyzer.analyze(
                 text=text,
                 language='en',
@@ -61,7 +58,7 @@ def sanitize_string(text):
                 score_threshold=0.5
             )
             
-            # --- IMPROVEMENT: Investor-Speak Replacements ---
+            # --- Investor-Speak Replacements ---
             # Instead of <ORG>, we use "The Company"
             operators = {
                 "ORG": OperatorConfig("replace", {"new_value": "the Company"}),
@@ -86,9 +83,6 @@ def sanitize_string(text):
     return text
 
 def sanitize_fallback(text):
-    """
-    Regex rules to catch patterns the NLP might miss or misinterpret.
-    """
     # Dynamic Pattern Replacement
     regex_rules = [
         # 1. Remove Corporate Suffixes (Case Insensitive)
