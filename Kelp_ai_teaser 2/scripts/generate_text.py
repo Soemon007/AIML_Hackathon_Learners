@@ -1,53 +1,109 @@
+# Import for fatal errors
 import warnings
 warnings.filterwarnings("ignore")
+# Imports for API
 import google.generativeai as genai
 from google.api_core import exceptions
 import json
+# Import for cleaning JSON response
 import re
+# Import for secure API key implementation
+import os 
 
-# --- API CONFIGURATION ---
-# YOUR ORIGINAL MODEL LIST
+# API CONFIGURATION
+MY_API_KEY = os.getenv('GEMINI_API_KEY')
+if not MY_API_KEY:
+    raise ValueError("Error: GEMINI_API_KEY environment variable not set.")
+
+# MODEL CONFIGURATION
+
+# List of Gemini models to try (in order of preference)
+# Falls back to next model if current one hits rate limits
 MODELS_TO_TRY = [
     'gemini-3-flash-preview',
     'gemini-2.5-flash',
-    'gemini-2.5-flash-lite-preview-09-2025']
+    'gemini-2.5-flash-lite-preview-09-2025'
+]
 
-IMG_DIR = "assets"
-images = ["sedex.png", "iso 9001.png"]
+
+# Directory paths for assets
+CERT_DIR = "assets/certifications"
+ICON_DIR = "assets/icons"
+
+# Available certification images (used in response schema)
+certifications = ["sedex.png", "iso 9001.png"]
+
+# Available icon images (used in response schema)
+icons = ["growth.png", "market.png", "revenue.png", "team.png"]
+
 
 def generate_slide_text(private_data, public_data):
-    genai.configure(api_key=MY_API_KEY)
+    """
+    Generates structured JSON content for a blind teaser deck using Gemini API.
     
-    # 1. Unified Schema (Matches your latest file exactly)
+    Args:
+        private_data (str): Proprietary company data from uploaded .md file
+        public_data (str): Scraped public data from company website
+        
+    Returns:
+        dict: Structured JSON containing slide content (sector, highlights, charts, etc.)
+        
+    Raises:
+        RuntimeError: If all models fail to generate valid response
+    """
+    
+    genai.configure(api_key=MY_API_KEY)
+
+    # Defines the expected JSON structure for the AI response
     response_schema = {
         "type": "OBJECT",
         "properties": {
+            # Sector classification (Manufacturing, Consumer, Tech, Pharma, Logistics)
             "sector": {"type": "STRING"}, 
+            
+            # Business overview bullets (4-5 points)
             "business_overview": {
                 "type": "ARRAY",
                 "items": {"type": "STRING"}
             },
-            # We keep 'brand_overview' for backward compatibility, 
-            # but the prompt will mostly use 'business_overview' for all sectors now.
+            
+            # Legacy field for backward compatibility (D2C brands)
             "brand_overview": {
                 "type": "ARRAY",
                 "items": {"type": "STRING"}
             },
+            
+            # At-a-glance summary (3 concise points)
             "at_a_glance": {
                 "type": "ARRAY",
                 "items": {"type": "STRING"}
             },
+            
+            # Portfolio and products list (3 points)
             "portfolio_and_products": {
                 "type": "ARRAY",
                 "items": {"type": "STRING"}
             },
+            
+            # Investment highlights (5-7 points)
             "investment_highlights": {
                 "type": "ARRAY",
                 "items": {"type": "STRING"}
             },
+            
+            # Descriptive text explaining the bar chart
             "bar_chart_text": {"type": "STRING"},
+            
+            # Descriptive text explaining the pie chart
             "pie_chart_text": {"type": "STRING"},
+            
+            # Certification images (format: "cert1.png||cert2.png")
             "certifications": {"type": "STRING"},
+            
+            # Icon images for visual representation (format: "icon1.png||icon2.png")
+            "icons": {"type": "STRING"},
+            
+            # Pie chart data structure
             "pie_chart_data": {
                 "type": "OBJECT",
                 "properties": {
@@ -57,6 +113,8 @@ def generate_slide_text(private_data, public_data):
                 },
                 "required": ["title", "categories", "values"]
             },
+            
+            # Bar chart data structure
             "bar_chart_data": {
                 "type": "OBJECT",
                 "properties": {
@@ -67,15 +125,21 @@ def generate_slide_text(private_data, public_data):
                 "required": ["title", "categories", "values"]
             }
         },
+        # Minimum required fields for valid response
         "required": ["sector", "at_a_glance", "portfolio_and_products", "investment_highlights"]
     }
 
+    # Ensures API returns structured JSON matching our schema
     generation_config = {
         "response_mime_type": "application/json",
         "response_schema": response_schema
     }
 
-    # 2. Rich Context Prompt with Sector Intelligence
+    # ========================================
+    # PROMPT CONSTRUCTION
+    # ========================================
+    # Detailed instructions for the AI to generate sector-specific content
+    
     prompt = f"""
     You are an M&A investment analyst.
     
@@ -144,9 +208,15 @@ def generate_slide_text(private_data, public_data):
 
     6. "certifications": 
        - String format: "cert1.png||cert2.png" 
-       - Choose ONLY from: {images}. Max 3.
+       - Choose ONLY from: {certifications}. Max 3.
 
-    7. "pie_chart_data" & "bar_chart_data":
+    7. "icons":
+       - String format: "icon1.png||icon2.png"
+       - Choose ONLY from: {icons}. Max 4.
+       - Select icons for each of the textbox you've made for 1,2,3, 5(bar chart) and 5(pie chart).
+       - Icon file names contain keywords of what icons represent, Select accordingly to the content ouputted for each textbox
+
+    8. "pie_chart_data" & "bar_chart_data":
        - Pick the most important metric based on the Sector Guidelines.
        - Format: "Title||Cat1,Cat2,Cat3||Val1,Val2,Val3"
        - Use 3 to 5 categories per chart.
@@ -159,38 +229,52 @@ def generate_slide_text(private_data, public_data):
 
     PUBLIC DATA (SCRAPED):
     {public_data}
-    """
 
+    You may use the internet to clarify, verify, or supplement information when needed. 
+    Do not introduce facts that conflict with PRIVATE or PUBLIC DATA, and prioritize those sources over internet information.
+    """
+    
+    # Try each model in sequence until one succeeds
     for model_name in MODELS_TO_TRY:
         try:
-            print(f"🤖 Generating with {model_name}...")
+            # Initialize the Gemini model
             model = genai.GenerativeModel(model_name)
             
+            # Generate content with structured output
             response = model.generate_content(
                 prompt, 
                 generation_config=generation_config
             )
             
-            # Clean response
+            # RESPONSE CLEANING
             text_response = response.text.strip()
+            # Remove opening ```json or ``` markers
             text_response = re.sub(r"^```json|^```", "", text_response).strip()
+            # Remove closing ``` markers
             text_response = re.sub(r"```$", "", text_response).strip()
-            
+            # Parse the cleaned JSON string
             result = json.loads(text_response)
+
             
-            # Helper: If the model used 'brand_overview' for D2C, move it to 'business_overview'
-            # so the rest of the pipeline (PPT generator) only has to look in one place.
+            # Move 'brand_overview' to 'business_overview' if needed
             if result.get("brand_overview") and not result.get("business_overview"):
                 result["business_overview"] = result.pop("brand_overview")
-                
-            print(f"✅ Success with {model_name}! (Sector: {result.get('sector', 'Unknown')})")
+            # Return successful result
             return result
             
         except exceptions.ResourceExhausted:
-            print(f"⚠️ Limit hit for {model_name}. Switching...")
+            # Model hit rate limit, try next model
+            print(f"Limit hit for {model_name}. Switching...")
             continue
+            
         except Exception as e:
-            print(f"❌ Error with {model_name}: {e}")
+            # Other error occurred, try next model
+            print(f"Error with {model_name}: {e}")
             continue
 
-    raise RuntimeError("❌ All models failed.")
+    # ========================================
+    # FAILURE HANDLER
+    # ========================================
+    # All models failed to generate valid response
+    
+    raise RuntimeError("All models failed.")
