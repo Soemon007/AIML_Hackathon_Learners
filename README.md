@@ -82,6 +82,12 @@ Output:
 pip install -r requirements.txt
 ```
 
+Then run this:
+
+```
+python -m spacy download en_core_web_lg
+```
+
 ### 2. Run the Full Pipeline
 
 ```bash
