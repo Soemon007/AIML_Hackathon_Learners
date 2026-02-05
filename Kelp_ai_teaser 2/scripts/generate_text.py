@@ -6,8 +6,6 @@ import json
 import re
 
 # --- API CONFIGURATION ---
-MY_API_KEY = "AIzaSyBRn-VgFUbAntOW2GQpoTqieud1rjLPMyc"
-
 # YOUR ORIGINAL MODEL LIST
 MODELS_TO_TRY = [
     'gemini-3-flash-preview',
