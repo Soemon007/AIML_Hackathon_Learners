@@ -1,0 +1,10 @@
+google-generativeai
+python-pptx
+python-docx
+beautifulsoup4
+requests
+presidio-analyzer
+presidio-anonymizer
+spacy
+# Run this after installing requirements:
+# python -m spacy download en_core_web_lg
