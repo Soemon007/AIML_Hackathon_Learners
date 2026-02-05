@@ -1,4 +1,6 @@
+#Python import used for consistency
 import re
+#Python Imports for basic web-scraping
 import requests
 from bs4 import BeautifulSoup
 
@@ -18,8 +20,9 @@ def extract_website_from_md(md_text):  # Takes URL from .md file
             return url
     return None
 
-def scrape_public_data(URL):  # AScrapes the extracted URL
+def scrape_public_data(URL):  # Function scrapes the extracted URL
     url = URL
+    # Headers to mimic a real browser (avoids basic bot blocking
     headers = {
         "User-Agent": (
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -44,7 +47,8 @@ def scrape_public_data(URL):  # AScrapes the extracted URL
             text_blocks.append(text)
     
     public_text = " ".join(text_blocks)
-    
+
+    #Common website paths to attempt scraping
     pages = [
         "",
         "/about",
@@ -55,7 +59,8 @@ def scrape_public_data(URL):  # AScrapes the extracted URL
     
     collected_text = ""
     successful_urls = []
-    
+
+    #this collects info and appends into variables
     for page in pages:
         try:
             res = requests.get(url + page, timeout=10, headers=headers)
@@ -71,7 +76,8 @@ def scrape_public_data(URL):  # AScrapes the extracted URL
     
     # Limits text length to avoid memory issues
     collected_text = collected_text[:100000] if len(collected_text) > 100000 else collected_text
-    
+
+    #this is the final public data along with citations
     return {
         "raw_text": collected_text.strip(),
         "source_urls": successful_urls
