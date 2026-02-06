@@ -21,7 +21,7 @@ Output:
 * Native, editable PowerPoint slides (no images of text)
 * Financial charts generated programmatically
 * Sector-relevant, anonymized visuals
-* Hard anonymization checks (fails on data leaks)
+* Soft Anonymization check
 * Citation tracking for all major claims
 
 ---
@@ -84,7 +84,7 @@ pip install -r requirements.txt
 
 Then run this:
 
-```
+```bash
 python -m spacy download en_core_web_lg
 ```
 
@@ -98,11 +98,11 @@ python main.py
 
 After a successful run, you will find:
 
-
+```
 output/
 ├── company_teaser.pptx
 └── company_citations.docx
-
+```
 
 Both files are fully editable.
 
