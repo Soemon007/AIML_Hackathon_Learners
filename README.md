@@ -1,7 +1,7 @@
 # AIML_Hackathon_Learners
 
 # Automated Investment Teaser Generator (Kelp AI Hackathon)
-By Learners:
+By Learners: <br>
 -Rehan Mallik<br>   
 -Vedant Iyengar
 
