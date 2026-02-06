@@ -2,6 +2,7 @@
 
 # Automated Investment Teaser Generator (Kelp AI Hackathon)
 By Learners: <br>
+
 -Rehan Mallik<br>   
 -Vedant Iyengar
 
