@@ -36,7 +36,7 @@ def apply_formatting_to_placeholder(placeholder, text):
             run.font.bold = (i % 2 == 1)  # Every odd index is bold
 
 #Creates PPT
-def create_ppt(slides_data)
+def create_ppt(slides_data):
     
     def add_slide_from_template(prs, layout_index, placeholder_text=None, placeholder_charts=None, placeholder_images=None):
         
