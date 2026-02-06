@@ -233,9 +233,9 @@ def create_ppt(slides_data)
             14: cert[2],
             
             # Icons (TODO: Add actual placeholder IDs from PowerPoint)
-             : icon_list[0],  # Icon for business_overview
-             : icon_list[1],  # Icon for portfolio_and_products
-             : icon_list[2],  # Icon for at_a_glance
+             16: icon_list[0],  # Icon for business_overview
+             17: icon_list[1],  # Icon for portfolio_and_products
+             18: icon_list[2],  # Icon for at_a_glance
         }
     )
     
@@ -253,8 +253,8 @@ def create_ppt(slides_data)
         },
         placeholder_images={
             # Icons (TODO: Add actual placeholder IDs from PowerPoint)
-             : icon_list[3],  # Icon for bar_chart
-             : icon_list[4],  # Icon for pie_chart
+             16: icon_list[3],  # Icon for bar_chart
+             17: icon_list[4],  # Icon for pie_chart
         }
     )
     
