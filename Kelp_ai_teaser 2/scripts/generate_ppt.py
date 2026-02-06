@@ -15,10 +15,10 @@ CERT_DIR = "assets/certifications"
 ICON_DIR = "assets/icons"
 
 # Available certification images
-certifications = ["sedex.png", "iso 9001.png"]
+certifications = ["sedex.png", "iso 9001.png", "iso 14001.png", "fair trade.png", "energy star.png", "TGA - Australia.jpeg", "FDA.png", "B corporation.png", "MHRA - UK.png", "Salesforce Certified Financial Services Cloud Accredited Professional.jpeg","Salesforce Certified Administrator.png", " International Safety Award from the British Safety Council.png", "IDMA Quality Excellence Certified.jpeg"]
 
 # Available icon images
-icons = ["growth.png", "market.png", "revenue.png", "team.png"]
+icons = ["Cyber_Security_Hacking_Safety.png","Delivery_Service.png","Ecofriendly_Plant.png","Factory_Manufacturing_Industry.png","Global_Internet.png","Graph_Growth.png","Inventory_Storage.png","Restaurant_Food.png"]
 
 def apply_formatting_to_placeholder(placeholder, text):
     text_frame = placeholder.text_frame
@@ -119,7 +119,7 @@ def create_ppt(slides_data)
                     placeholder.insert_picture(image_path)
                 except Exception as e:
                     # Silently skip placeholders that don't support images
-                    print(f"⚠️ Placeholder {idx} does not support images: {e}")
+                    print(f"Placeholder {idx} does not support images: {e}")
                     pass
 
         return slide
@@ -183,10 +183,7 @@ def create_ppt(slides_data)
     # Clean up filenames and build full paths
     cert = [os.path.join(CERT_DIR, c.strip()) if c.strip() else "" for c in cert]
 
-    # ========================================
     # ICONS PROCESSING
-    # ========================================
-    
     icon_raw = slides_data.get("icons", "")
     icon_list = icon_raw.split("||") if icon_raw else []
     
@@ -236,9 +233,9 @@ def create_ppt(slides_data)
             14: cert[2],
             
             # Icons (TODO: Add actual placeholder IDs from PowerPoint)
-            # : icon_list[0],  # Icon for business_overview
-            # : icon_list[1],  # Icon for portfolio_and_products
-            # : icon_list[2],  # Icon for at_a_glance
+             : icon_list[0],  # Icon for business_overview
+             : icon_list[1],  # Icon for portfolio_and_products
+             : icon_list[2],  # Icon for at_a_glance
         }
     )
     
@@ -256,8 +253,8 @@ def create_ppt(slides_data)
         },
         placeholder_images={
             # Icons (TODO: Add actual placeholder IDs from PowerPoint)
-            # : icon_list[3],  # Icon for bar_chart
-            # : icon_list[4],  # Icon for pie_chart
+             : icon_list[3],  # Icon for bar_chart
+             : icon_list[4],  # Icon for pie_chart
         }
     )
     
